@@ -31,7 +31,9 @@ bool LinesInFile(const char* filePath, int32_t* const linesCount, int32_t* const
         ++currentLine;
     }
   
-    fclose(fp);
+    if(fclose(fp) != 0)
+        return false;
+
     return true;
 }
 

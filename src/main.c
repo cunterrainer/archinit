@@ -2,10 +2,11 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <unistd.h>
 
 #include "Process.h"
+#include "Output.h"
 
-#define PRINT_ERROR(message) printf(RED AIS "<Error: %s>" NRM_ENDL, message);
 #define FDISK_PATH "__fdiskInstaller__.sh"
 
 bool CreateFDiskInstaller()
@@ -13,19 +14,19 @@ bool CreateFDiskInstaller()
     FILE *f = fopen(FDISK_PATH, "w");
     if (f == NULL)
     {
-        PRINT_ERROR("couldn't open " FDISK_PATH);
+        PrintError("failed to open [" FDISK_PATH "]");
         return false;
     }
 
     const char *text = "#!/bin/bash\nfdisk /dev/sda <<EOF\ng\nn\n1\n\n+550M\nn\n2\n\n+2G\nn\n3\n\n\nt\n1\n1\nt\n2\n19\nw\nEOF";
     if (fprintf(f, "%s", text) < 0) {
-        PRINT_ERROR("writing to file [" FDISK_PATH "] wasn't successfull");
+        PrintError("writing to file [" FDISK_PATH "]");
         return false;
     }
-    printf(GRN AIS "<Successfully created [%s]" NRM_ENDL, FDISK_PATH);
+    PrintSuccess("created [" FDISK_PATH "]");
 
     if (fclose(f) != 0) {
-        PRINT_ERROR("file handle [" FDISK_PATH "] couldn't be closed");
+        PrintError("file handle [" FDISK_PATH "] couldn't be closed");
         return false;
     }
 
@@ -37,11 +38,11 @@ bool CreateFDiskInstaller()
 void DeleteFDiskInstaller()
 {
     if (remove(FDISK_PATH) != 0)
-        PRINT_ERROR("unable to remove file [" FDISK_PATH "]");
+        PrintError("unable to remove file [" FDISK_PATH "]");
 }
 
 
-int main()
+int InstallArch()
 {
     const char* commands[] = 
     {
@@ -74,4 +75,15 @@ int main()
 
     DeleteFDiskInstaller();
     return EXIT_SUCCESS;
+}
+
+
+int main()
+{
+    if(geteuid() != 0) {
+        PrintError("You don't have root privileges");
+        return EXIT_FAILURE;
+    }
+
+    return InstallArch();
 }

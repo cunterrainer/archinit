@@ -1,19 +1,10 @@
+#ifndef PROCESS_H
+#define PROCESS_H
+
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
-#define NRM "\x1B[0m"
-#define NRM_ENDL "\n"
-#define RED "\x1B[31m"
-#define GRN "\x1B[32m"
-#define YEL "\x1B[33m"
-#define BLU "\x1B[34m"
-#define MAG "\x1B[35m"
-#define CYN "\x1B[36m"
-#define WHT "\x1B[37m"
-
-#define AIS "[Arch installer script]"
-#define PRINT_ERROR(message) printf(RED AIS "<Error: %s>" NRM_ENDL, message);
+#include "Output.h"
 
 static int RunProcess(const char* process, const char* sinp) // stdin pipe
 {
@@ -44,3 +35,5 @@ static int RunProcess(const char* process, const char* sinp) // stdin pipe
     printf(GRN AIS "<Successfully finished subprocess [%s]" NRM_ENDL, process);
     return WEXITSTATUS(status);
 }
+
+#endif
