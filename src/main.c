@@ -5,7 +5,7 @@
 
 #include "Process.h"
 
-#define PRINT_ERROR(message) printf(RED AIS "<Error: %s>" NRM "\n", message);
+#define PRINT_ERROR(message) printf(RED AIS "<Error: %s>" NRM_ENDL, message);
 #define FDISK_PATH "__fdiskInstaller__.sh"
 
 bool CreateFDiskInstaller()
@@ -22,7 +22,7 @@ bool CreateFDiskInstaller()
         PRINT_ERROR("writing to file [" FDISK_PATH "] wasn't successfull");
         return false;
     }
-    printf(GRN AIS "<Successfully created [%s]" NRM "\n", FDISK_PATH);
+    printf(GRN AIS "<Successfully created [%s]" NRM_ENDL, FDISK_PATH);
 
     if (fclose(f) != 0) {
         PRINT_ERROR("file handle [" FDISK_PATH "] couldn't be closed");
@@ -74,6 +74,5 @@ int main()
     }
 
     DeleteFDiskInstaller();
-    getchar();
     return EXIT_SUCCESS;
 }
