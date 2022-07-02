@@ -47,7 +47,6 @@ int main()
     {
         "pacman -Syy",
         "pacman -Sy",
-        "loadkeys de-latin1",
         "timedatectl set-ntp true",
         "./" FDISK_PATH,
         "mkfs.fat -F32 /dev/sda1",
