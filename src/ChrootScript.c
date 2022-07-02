@@ -5,13 +5,14 @@
 #include <stdbool.h>
 
 #include "Process.h"
+#include "Output.h"
 
 bool LinesInFile(const char* filePath, int32_t* const linesCount, int32_t* const longestLine)
 {
     FILE *fp = fopen(filePath, "r");
     if (fp == NULL)
     {
-        printf(RED AIS "<Error: failed to open file [%s] for counting lines" NRM_ENDL, filePath);
+        PrintFileOpenError(filePath);
         return false;
     }
   
@@ -31,32 +32,37 @@ bool LinesInFile(const char* filePath, int32_t* const linesCount, int32_t* const
         ++currentLine;
     }
   
-    if(fclose(fp) != 0)
+    if(fclose(fp) != 0) {
+        PrintFileCloseError(filePath);
         return false;
+    }
 
     return true;
 }
 
 
 // if fpw == NULL fp = fpw
-void ReplaceLineInFile(const char* const filePath, const char* const filePathWrite, const char* const toRep, const char* const repWith)
+bool ReplaceLineInFile(const char* const filePath, const char* const filePathWrite, const char* const toRep, const char* const repWith)
 {
     int32_t linesCount;
     int32_t longestLine;
-    if(LinesInFile(filePath, &linesCount, &longestLine) == false) return;
+    if(LinesInFile(filePath, &linesCount, &longestLine) == false) return false;
     longestLine += 1; // null termination char
     
     // allocate array to hold lines
     char** lines = (char**)malloc(linesCount * sizeof(char*));
-    if(lines == NULL) return;
+    if(lines == NULL) return false;
 
     FILE* fp = fopen(filePath, "r");
-    if(fp == NULL) return;
+    if(fp == NULL) {
+        PrintFileOpenError(filePath);
+        return false;
+    }
 
     for(int32_t i = 0; i < linesCount; ++i)
     {
         lines[i] = (char*)malloc(longestLine * sizeof(char));
-        if(lines[i] == NULL) return;
+        if(lines[i] == NULL) return false;
         memset(lines[i], '\0', longestLine);
         fgets(lines[i], longestLine, fp);
 
@@ -65,12 +71,25 @@ void ReplaceLineInFile(const char* const filePath, const char* const filePathWri
             strncpy(lines[i], repWith, longestLine);
         }
     }
-    fclose(fp);
+    if(fclose(fp) != 0) {
+        PrintFileCloseError(filePath);
+        return false;
+    }
    
-    if(filePathWrite == NULL)
+    if(filePathWrite == NULL) {
         fp = fopen(filePath, "w");
-    else
+        if(fp == NULL) {
+            PrintFileOpenError(filePath);
+            return false;
+        }
+    }
+    else {
         fp = fopen(filePathWrite, "w");
+        if(fp == NULL) {
+            PrintFileOpenError(filePathWrite);
+            return false;
+        }
+    }
 
     for(int32_t i = 0; i < linesCount; ++i)
     {
@@ -79,55 +98,110 @@ void ReplaceLineInFile(const char* const filePath, const char* const filePathWri
     }
 
     free((void*)lines);
-    fclose(fp);
+    
+    if(filePathWrite == NULL) 
+    {
+        if(fclose(fp) != 0) {
+            PrintFileCloseError(filePath);
+            return false;
+        }
+    }
+    else 
+    {
+        if(fclose(fp) != 0) {
+            PrintFileCloseError(filePathWrite);
+            return false;
+        }
+    }
+
+    return true;
 }
 
 
-void WriteLineToFile(const char* filePath, const char* line)
+bool WriteLineToFile(const char* filePath, const char* line)
 {
     FILE* fp = fopen(filePath, "w");
+    if(fp == NULL) {
+        PrintFileOpenError(filePath);
+        return false;
+    }
+
     fprintf(fp, "%s", line);
-    fclose(fp);
+
+    if(fclose(fp) != 0) {
+        PrintFileCloseError(filePath);
+        return false;
+    }
+    return true;
 }
 
 
-void WriteHostsFile()
+bool WriteHostsFile()
 {
-    FILE* fp = fopen("/etc/hosts", "a");
+    #define HOST_PATH "/etc/hosts"
+    FILE* fp = fopen(HOST_PATH, "a");
+    if(fp == NULL) {
+        PrintFileOpenError(HOST_PATH);
+        return false;
+    }
+
     fprintf(fp, "\n");
     fprintf(fp, "127.0.0.1\tlocalhost\n");
     fprintf(fp, "::1\t\tlocalhost\n");
     fprintf(fp, "127.0.1.1\tvyx.localdomain vyx");
-    fclose(fp);
+    
+    if(fclose(fp) != 0) {
+        PrintFileCloseError(HOST_PATH);
+        return false;
+    }
+    return true;
 }
 
 
-#define SUDOERS_TMP_FILE "/etc/init_script_sudo_tmp"
-#define SUDOERS_PATH "/etc/sudoers"
-#define SUDOERS_LOCK_PATH "/etc/sudoers.tmp"
-void EditSudoersFile()
+
+bool EditSudoersFile()
 {
+    #define SUDOERS_TMP_FILE "/etc/init_script_sudo_tmp"
+    #define SUDOERS_PATH "/etc/sudoers"
+    #define SUDOERS_LOCK_PATH "/etc/sudoers.tmp"
+
     FILE* fp;
     while((fp = fopen(SUDOERS_LOCK_PATH, "r")) != NULL){ // file exists
-        fclose(fp);
+        if(fclose(fp) != 0) {
+            PrintError("file handle [" SUDOERS_LOCK_PATH "] couldn't be closed (Current task: Trying if it still exists)");
+            return false;
+        }
     }
     fp = fopen(SUDOERS_LOCK_PATH, "w");
-    fclose(fp);
+    if(fp == NULL) {
+        PrintFileOpenError(SUDOERS_LOCK_PATH);
+        return false;
+    }
+
+    if(fclose(fp) != 0) {
+        PrintFileCloseError(SUDOERS_LOCK_PATH);
+        return false;
+    }
 
     ReplaceLineInFile(SUDOERS_PATH, SUDOERS_TMP_FILE, "# %wheel ALL=(ALL:ALL) ALL\n", "%wheel ALL=(ALL:ALL) ALL\n");
 
     int status = RunProcess("visudo -c -f " SUDOERS_TMP_FILE, NULL);
     if(status != 0)
     {
-        printf(RED AIS "<Error: visudo checking didn't pass [" SUDOERS_TMP_FILE "]" NRM_ENDL);
+        PrintError("visudo checking didn't pass [" SUDOERS_TMP_FILE "]");
     }
     else
     {
         RunProcess("cp " SUDOERS_TMP_FILE " " SUDOERS_PATH, NULL);
     }
 
-    remove(SUDOERS_TMP_FILE);
-    remove(SUDOERS_LOCK_PATH);
+    if(remove(SUDOERS_TMP_FILE) != 0) {
+        PrintRemoveError(SUDOERS_TMP_FILE);
+    }
+    if(remove(SUDOERS_LOCK_PATH) != 0) {
+        PrintRemoveError(SUDOERS_LOCK_PATH);
+    }
+    return true;
 }
 
 

@@ -12,27 +12,27 @@ static int RunProcess(const char* process, const char* sinp) // stdin pipe
     FILE* p = popen(process, "w");
     if(p == NULL)
     {
-        printf(RED AIS "<Error: couldn't start subprocess [%s]" NRM_ENDL, process);
+        PrintError("couldn't start subprocess [%s]", process);
         return -1;
     }
-    printf(GRN AIS "<Successfully started subprocess [%s]" NRM_ENDL, process);
+    PrintSuccess("started subprocess [%s]", process);
 
     if(sinp != NULL)
     {
         if(fprintf(p, "%s", sinp) < 0) {
-            printf(MAG AIS "<Error: writing to stdin of subprocess [%s] | stdin: %s" NRM_ENDL, process, sinp);
+            PrintColor(MAG, "Error: writing to stdin of subprocess [%s] | stdin: %s", process, sinp);
         }
         else {
-            printf(BLU AIS "<Successfully wrote to stdin of subprocess [%s] | stdin: %s" NRM_ENDL, process, sinp);
+            PrintColor(BLU, "Successfully wrote to stdin of subprocess [%s] | stdin: %s", process, stdin);
         }
     }
 
     int status;
     if((status = pclose(p)) == -1) {
-        printf(RED AIS "<Error: failed to close subprocess [%s]" NRM_ENDL, process);
+        PrintError("failed to close subprocess [%s]", process);
         return status;
     }
-    printf(GRN AIS "<Successfully finished subprocess [%s]" NRM_ENDL, process);
+    PrintSuccess("finished subprocess [%s]", process);
     return WEXITSTATUS(status);
 }
 

@@ -14,7 +14,7 @@ bool CreateFDiskInstaller()
     FILE *f = fopen(FDISK_PATH, "w");
     if (f == NULL)
     {
-        PrintError("failed to open [" FDISK_PATH "]");
+        PrintFileOpenError(FDISK_PATH);
         return false;
     }
 
@@ -26,7 +26,7 @@ bool CreateFDiskInstaller()
     PrintSuccess("created [" FDISK_PATH "]");
 
     if (fclose(f) != 0) {
-        PrintError("file handle [" FDISK_PATH "] couldn't be closed");
+        PrintFileCloseError(FDISK_PATH);
         return false;
     }
 
@@ -38,7 +38,7 @@ bool CreateFDiskInstaller()
 void DeleteFDiskInstaller()
 {
     if (remove(FDISK_PATH) != 0)
-        PrintError("unable to remove file [" FDISK_PATH "]");
+        PrintRemoveError(FDISK_PATH);
 }
 
 

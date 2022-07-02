@@ -54,4 +54,19 @@ static void PrintColor(const char* const color, const char* const message, ...)
     PRINT_PREDEF_BODY(color, "", message);
 }
 
+static void PrintFileOpenError(const char* const filePath)
+{
+    PrintError("failed to open [%s]", filePath);
+}
+
+static void PrintFileCloseError(const char* const filePath)
+{
+    PrintError("file handle [%s] couldn't be closed", filePath);
+}
+
+static void PrintRemoveError(const char* const fileName)
+{
+    PrintError("unable to remove file [%s]", fileName);
+}
+
 #endif
