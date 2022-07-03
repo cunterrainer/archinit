@@ -63,8 +63,8 @@ static int InstallArch()
         "cp archinit/chroot_script /mnt/root/chroot_script",
         "chmod +x /mnt/root/chroot_script",
         "arch-chroot /mnt /root/chroot_script", // /mnt/root/chroot real path
-        "umount -l /mnt",
-        "reboot"
+        //"umount -l /mnt",
+        //"reboot"
     };
     uint32_t commandsLength = sizeof(commands) / sizeof(const char*);
 
