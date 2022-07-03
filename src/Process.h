@@ -15,7 +15,7 @@ static int RunProcess(const char* process, const char* sinp) // stdin pipe
         PrintError("couldn't start subprocess [%s]", process);
         return -1;
     }
-    PrintSuccess("started subprocess [%s]", process);
+    PrintSuccess("started  subprocess [%s]", process);
 
     if(sinp != NULL)
     {
