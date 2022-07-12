@@ -23,7 +23,7 @@ static int RunProcess(const char* process, const char* sinp) // stdin pipe
             PrintColor(MAG, "Error: writing to stdin of subprocess [%s] | stdin: %s", process, sinp);
         }
         else {
-            PrintColor(BLU, "Successfully wrote to stdin of subprocess [%s] | stdin: %s", process, stdin);
+            PrintColor(BLU, "Successfully wrote to stdin of subprocess [%s] | stdin: %s", process, sinp);
         }
     }
 

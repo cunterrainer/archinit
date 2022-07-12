@@ -12,13 +12,13 @@ all:
 	gcc -static-libgcc $(ARCHINIT)
 	gcc -static-libgcc $(CHROOT)
 	gcc -static-libgcc $(GCF)
-	gcc -static-libgcc $(SETUP)
+	#gcc -static-libgcc $(SETUP)
 
 opt:
 	gcc -Os -static-libgcc $(ARCHINIT)
 	gcc -Os -static-libgcc $(CHROOT)
 	gcc -Os -static-libgcc $(GCF)
-	gcc -Os -static-libgcc $(SETUP)
+	#gcc -Os -static-libgcc $(SETUP)
 
 cln:
-	rm $(ARCHINITBIN) $(CHROOTBIN) $(GCFBIN) $(SETUPTBIN)
+	rm $(ARCHINITBIN) $(CHROOTBIN) $(GCFBIN)# $(SETUPTBIN)
