@@ -18,6 +18,33 @@ const std::vector<std::string> g_Programs = {
     "kitty"
 };
 
+
+const std::vector<std::string> g_Packages = {
+    "pacman-contrib",
+    "sysstat",
+    "lm_sensors",
+    "pulseaudio-alsa",
+    "pulseaudio-bluetooth",
+    "pulseaudio-equalizer",
+    "alsa-utils",
+    "pavucontrol",
+    "feh",
+    "ttf-font-awesome",
+    "materia-gtk-theme",
+    "papirus-icon-theme",
+    "lxappearance",
+    "rofi",
+    "ttf-ubuntu-font-family",
+    "curl",
+    "neovim",
+    "npm",
+    "yarn",
+    "clang",
+    "nodejs",
+    "xclip"
+};
+
+
 namespace util
 {
     std::string VectorToString(const std::vector<std::string>& vec)
@@ -68,6 +95,41 @@ namespace util
         output << content;
         output.close();
     }
+
+
+    void CreateFolder(const std::string& str)
+    {
+        const std::string process = "sudo mkdir -p " + str;
+        RunProcess(process.c_str(), nullptr);
+    }
+
+
+    void CopyFile(const std::string& src, const std::string& dest)
+    {
+        const std::string process = "sudo cp " + src + " " + dest;
+        RunProcess(process.c_str(), nullptr);
+    }
+
+
+    void CopyFolder(const std::string& src, const std::string& dest)
+    {
+        const std::string process = "sudo cp -RT " + src + " " + dest;
+        RunProcess(process.c_str(), nullptr);
+    }
+
+
+    void Chown(const std::string& file, const std::string& owner)
+    {
+        const std::string process = "sudo chown " + owner + ":" + owner + " " + file;
+        RunProcess(process.c_str(), nullptr);
+    }
+
+
+    void Chmod(const std::string& file, const std::string& mode)
+    {
+        const std::string process = "sudo chmod " + mode + " " + file;
+        RunProcess(process.c_str(), nullptr);
+    }
 }
 
 
@@ -108,12 +170,96 @@ void ConfigureXinitFile()
 }
 
 
+void InstallYay()
+{
+    RunProcess("sudo pacman -S git base-devel", "y");
+    RunProcess("sudo git clone https://aur.archlinux.org/yay-git.git", nullptr);
+    
+    const std::string user_name = util::GetEnv("USER");
+    const std::string chown_command = "sudo chown -R " + user_name + ":" + user_name + " ./yay-git";
+    RunProcess(chown_command.c_str(), nullptr);
+    RunProcess("(cd yay-git && makepkg -si)", nullptr);
+    RunProcess("yay -Syu", nullptr);
+    RunProcess("sudo rm -r yay-git", nullptr);
+}
+
+
 void InstallI3()
 {
-    const std::string programsCommand = "sudo pacman -S " + util::VectorToString(g_Programs);
+    std::string programsCommand = "sudo pacman -S " + util::VectorToString(g_Programs);
     RunProcess(programsCommand.c_str(), "\ny");
     CopyXinitFile();
     ConfigureXinitFile();
+
+    programsCommand = "sudo pacman -S " + util::VectorToString(g_Packages);
+    RunProcess(programsCommand.c_str(), "y");
+    RunProcess("pulseaudio --check && pulseaudio -D", nullptr);
+    RunProcess("yay -S i3lock-color", nullptr);
+
+    const std::string home = util::GetEnv("HOME");
+    const std::string user = util::GetEnv("USER");
+    const std::string config_folder = "config_files/";
+
+    // i3status
+    util::CreateFolder(home + "/.config/i3status");
+    util::CopyFile(config_folder + "i3status.conf", home + "/.config/i3status/i3status.conf");
+    util::Chown(home + "/.config/i3status/i3status.conf", user);
+
+    // i3blocks
+    util::CreateFolder(home + "/.config/i3blocks");
+    util::CopyFile(config_folder + "i3blocks.conf", home + "/.config/i3blocks/i3blocks.conf");
+    util::Chown(home + "/.config/i3blocks/i3blocks.conf", user);
+
+    // i3
+    util::CreateFolder(home + "/.config/i3");
+    util::CopyFile(config_folder + "config", home + "/.config/i3/config");
+    util::Chown(home + "/.config/i3/config", user);
+
+    // Rofi
+    util::CreateFolder(home + "/.config/rofi");
+    util::CreateFolder(home + "/usr/share/rofi/themes");
+    util::CopyFile(config_folder + "config.rasi", home + "/.config/rofi/config.rasi");
+    util::CopyFolder(config_folder + "rofi_themes", "/usr/share/rofi/themes");
+
+    // Kitty
+    util::CopyFolder(config_folder + "kitty", home + "/.config/kitty");
+
+    // Scripts
+    util::CopyFolder(config_folder + "scripts", home + "/.config/scripts");
+    util::Chmod(home + "/.config/scripts/*", "+x -R");
+
+    // Wallpaper
+    util::CreateFolder(home + "/Pictures/wallpaper");
+    util::CopyFolder(config_folder + "wallpaper", home + "/Pictures/wallpaper");
+
+    // Neovim
+    util::CreateFolder(home + "/.config/nvim/themes");
+    util::CreateFolder(home + "/.config/nvim/lua");
+    util::CreateFolder(home + "/.config/nvim/autoload");
+
+    util::CopyFile(config_folder + "init.vim", home + "/.config/nvim/init.vim");
+    util::CopyFolder(config_folder + "themes", home + "/.config/nvim/themes");
+    util::CopyFolder(config_folder + "lua", home + "/.config/nvim/lua");
+
+    programsCommand = "sudo curl https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim -o " + home + "/.config/nvim/autoload/plug.vim";
+    RunProcess(programsCommand.c_str(), nullptr);
+
+
+        //execCmd("Downloading plug.vim", "sudo curl https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim -o " + m_HomeDir + "/.config/nvim/autoload/plug.vim");
+
+        //execCmd("Installing Neovim plugins", "nvim +PlugInstall");
+
+        //execCmd("Updating and syncing coc", "nvim +CocUpdateSync");
+        //execCmd("Updating coc", "nvim +CocUpdate");
+        //for(std::size_t i = 0; i < coc_pack.size(); ++i)
+        //    execCmd("Coc install " + coc_pack[i], "nvim \"+CocInstall " + coc_pack[i] + "\"");
+
+        ////execCmd("Coc install clangd and pyright", "nvim \"+CocInstall coc-clangd coc-pyrigth\"");
+        ////execCmd("Updating TS", "nvim \"+TSUpdate all\"");
+        //
+        //execCmd("Updating treesitter-parsers", "nvim +TSUpdate");
+        //for(std::size_t i = 0; i < parser_ts.size(); ++i)
+        //    execCmd("Installing " + parser_ts[i] + " parser for treesitter", "nvim \"+TSInstall " + parser_ts[i] + "\"");
 }
 
 
