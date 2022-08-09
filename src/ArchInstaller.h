@@ -65,7 +65,7 @@ static int InstallArch(char** argv)
     const char* commands[17] = 
     {
         "pacman -Syy",
-        "pacman -Sy",
+        "pacman -Sy archlinux-keyring",
         "timedatectl set-ntp true",
         "./" FDISK_PATH,
         "mkfs.fat -F32 /dev/sda1",
