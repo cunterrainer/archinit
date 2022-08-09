@@ -212,8 +212,6 @@ void InstallI3()
     CopyXinitFile();
     ConfigureXinitFile();
 
-    //programsCommand = "sudo pacman -S " + util::VectorToString(g_Packages);
-    //RunProcess(programsCommand.c_str(), "y");
     RunProcess("pulseaudio --check && pulseaudio -D", nullptr);
     InstallYay();
     RunProcess("yay -S google-chrome", "\ny");
