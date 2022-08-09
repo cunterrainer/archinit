@@ -195,7 +195,7 @@ void ConfigureXinitFile()
 
 void InstallYay()
 {
-    RunProcess("sudo pacman -S git base-devel", "y");
+    RunProcess("sudo pacman -S git base-devel", "\ny");
     RunProcess("sudo git clone https://aur.archlinux.org/yay-git.git", nullptr);
     
     const std::string user_name = util::GetEnv("USER");
@@ -286,7 +286,7 @@ void InstallI3()
 int main()
 {
     if(geteuid() == 0) {
-        PrintColor(YEL, "Warning: You're trying to run this program as root, hence the files will be copied into the root home dir\nAre you sure you want to proceede? [y|n]:");
+        PrintColor(YEL, "Warning: You're trying to run this program as root, hence the files will be copied into the root home dir\nAre you sure you want to continue? [y|n]:");
         char yn;
         std::cin >> yn;
         if (yn != 'y' && yn != 'Y')
