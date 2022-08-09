@@ -15,11 +15,9 @@ const std::vector<std::string> g_Programs = {
     "dmenu",
     "xorg",
     "xorg-xinit",
-    "kitty"
-};
+    "kitty",
 
-
-const std::vector<std::string> g_Packages = {
+    // packages
     "pacman-contrib",
     "sysstat",
     "lm_sensors",
@@ -195,7 +193,7 @@ void ConfigureXinitFile()
 
 void InstallYay()
 {
-    RunProcess("sudo pacman -S git base-devel", "\ny");
+    RunProcess("sudo pacman -S git base-devel go", "\ny");
     RunProcess("sudo git clone https://aur.archlinux.org/yay-git.git", nullptr);
     
     const std::string user_name = util::GetEnv("USER");
@@ -214,14 +212,18 @@ void InstallI3()
     CopyXinitFile();
     ConfigureXinitFile();
 
-    programsCommand = "sudo pacman -S " + util::VectorToString(g_Packages);
-    RunProcess(programsCommand.c_str(), "y");
+    //programsCommand = "sudo pacman -S " + util::VectorToString(g_Packages);
+    //RunProcess(programsCommand.c_str(), "y");
     RunProcess("pulseaudio --check && pulseaudio -D", nullptr);
     InstallYay();
-    RunProcess("yay -S google-chrome", nullptr);
-    RunProcess("yay -S visual-studio-code-bin", nullptr);
-    RunProcess("yay -S i3lock-color", nullptr);
+    RunProcess("yay -S google-chrome", "\ny");
+    RunProcess("yay -S visual-studio-code-bin", "\ny");
+    RunProcess("sudo pacman -R i3lock", "y");
+    RunProcess("yay -S i3lock-color", "\ny");
 
+    RunProcess("yay -Scc", "y\ny\ny");
+    RunProcess("sudo pacman -Scc", "y\ny");
+    
     const std::string home = util::GetEnv("HOME");
     const std::string user = util::GetEnv("USER");
     const std::string config_folder = "config_files/";
