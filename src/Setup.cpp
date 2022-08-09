@@ -282,7 +282,7 @@ void InstallI3()
     nvim_cmd += "\" +TSUpdate \"+TSInstall ";
     for(auto& i : g_Parser)
         nvim_cmd += i + " ";
-    nvim_cmd += "\"";
+    nvim_cmd += "\" +qa";
     RunProcess(nvim_cmd.c_str(), nullptr);
 }
 
