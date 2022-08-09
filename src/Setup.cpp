@@ -216,10 +216,10 @@ void InstallI3()
     //RunProcess(programsCommand.c_str(), "y");
     RunProcess("pulseaudio --check && pulseaudio -D", nullptr);
     InstallYay();
-    RunProcess("yay -S google-chrome", "A\ny");
-    RunProcess("yay -S visual-studio-code-bin", "A\ny");
+    RunProcess("yay -S google-chrome", "\ny");
+    RunProcess("yay -S visual-studio-code-bin", "\ny");
     RunProcess("sudo pacman -R i3lock", "y");
-    RunProcess("yay -S i3lock-color", "A\ny");
+    RunProcess("yay -S i3lock-color", "\ny");
 
     RunProcess("yay -Scc", "y\ny\ny");
     RunProcess("sudo pacman -Scc", "y\ny");
