@@ -201,7 +201,7 @@ void InstallYay()
     const std::string user_name = util::GetEnv("USER");
     const std::string chown_command = "sudo chown -R " + user_name + ":" + user_name + " ./yay-git";
     RunProcess(chown_command.c_str(), nullptr);
-    RunProcess("(cd yay-git && makepkg -si)", nullptr);
+    RunProcess("(cd yay-git && makepkg -si)", "y");
     RunProcess("yay -Syu", nullptr);
     RunProcess("sudo rm -r yay-git", nullptr);
 }
@@ -279,6 +279,7 @@ void InstallI3()
     for(auto& i : g_Parser)
         nvim_cmd += i + " ";
     nvim_cmd += "\"";
+    RunProcess(nvim_cmd.c_str(), nullptr);
 }
 
 
