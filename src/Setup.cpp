@@ -111,7 +111,7 @@ void ConfigureXinitFile()
 void InstallI3()
 {
     const std::string programsCommand = "sudo pacman -S " + util::VectorToString(g_Programs);
-    RunProcess(programsCommand.c_str(), "all\ny");
+    RunProcess(programsCommand.c_str(), "\ny");
     CopyXinitFile();
     ConfigureXinitFile();
 }
