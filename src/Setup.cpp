@@ -216,10 +216,10 @@ void InstallI3()
     //RunProcess(programsCommand.c_str(), "y");
     RunProcess("pulseaudio --check && pulseaudio -D", nullptr);
     InstallYay();
-    RunProcess("yay -S google-chrome", "\ny");
-    RunProcess("yay -S visual-studio-code-bin", "\ny");
+    RunProcess("yay -S google-chrome", "A\ny");
+    RunProcess("yay -S visual-studio-code-bin", "A\ny");
     RunProcess("sudo pacman -R i3lock", "y");
-    RunProcess("yay -S i3lock-color", "\ny");
+    RunProcess("yay -S i3lock-color", "A\ny");
 
     RunProcess("yay -Scc", "y\ny\ny");
     RunProcess("sudo pacman -Scc", "y\ny");
@@ -263,15 +263,15 @@ void InstallI3()
     // Neovim
     util::CreateFolder(home + "/.config/nvim/themes");
     util::CreateFolder(home + "/.config/nvim/lua");
-    //util::CreateFolder(home + "/.config/nvim/autoload");
+    util::CreateFolder(home + "/.config/nvim/autoload");
     util::ChownFolder(home + "/.config/nvim", user);
 
     util::CopyFile(config_folder + "init.vim", home + "/.config/nvim/init.vim");
     util::CopyFolder(config_folder + "themes", home + "/.config/nvim/themes");
     util::CopyFolder(config_folder + "lua", home + "/.config/nvim/lua");
 
-    //programsCommand = "sudo curl https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim -o " + home + "/.config/nvim/autoload/plug.vim";
-    //RunProcess(programsCommand.c_str(), nullptr);
+    programsCommand = "sudo curl https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim -o " + home + "/.config/nvim/autoload/plug.vim";
+    RunProcess(programsCommand.c_str(), nullptr);
 
     std::string nvim_cmd = "nvim +PlugInstall +CocUpdateSync +CocUpdate \"+CocInstall ";
     for(auto& i : g_CocLangServ)
