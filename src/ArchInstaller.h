@@ -79,15 +79,14 @@ static int InstallArch(char** argv)
         "chmod +x /mnt/root/chroot_script"
 
         //"arch-chroot /mnt /root/chroot_script", // /mnt/root/chroot real path
-        //"rm /root/chroot_script",
+        //"rm /mnt/root/chroot_script",
         //"umount -l /mnt",
         //"reboot"
     };
     commands[13] = chroot;
-    commands[14] = "rm /root/chroot_script";
-    commands[15] = "rm /mnt/root/chroot_script";
-    commands[16] = "umount -l /mnt";
-    //commands[16] = "reboot";
+    commands[14] = "rm /mnt/root/chroot_script";
+    commands[15] = "umount -l /mnt";
+    commands[16] = "reboot";
     uint32_t commandsLength = sizeof(commands) / sizeof(const char*);
 
     RunProcess("pacman -S archlinux-keyring", "y");
