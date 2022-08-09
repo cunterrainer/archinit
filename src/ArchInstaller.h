@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 #include <unistd.h>
 
 #include "Process.h"
@@ -45,9 +46,23 @@ static void DeleteFDiskInstaller()
 }
 
 
-static int InstallArch()
+static int InstallArch(char** argv)
 {
-    const char* commands[] = 
+    const char* chroot_cmd = "arch-chroot /mnt /root/chroot_script ";
+    const size_t chroot_size = strlen(chroot_cmd);
+    const size_t arg0 = strlen(argv[1]);
+    const size_t arg1 = strlen(argv[2]);
+    const size_t arg2 = strlen(argv[3]);
+
+    char* chroot = calloc(chroot_size + arg0 + arg1 + arg2 + 3, sizeof(char));
+    strcpy(chroot, chroot_cmd);
+    strcpy(chroot + chroot_size, argv[1]);
+    strcpy(chroot + chroot_size + arg0, " ");
+    strcpy(chroot + chroot_size + arg0 + 1, argv[2]);
+    strcpy(chroot + chroot_size + arg0 + 1 + arg1, " ");
+    strcpy(chroot + chroot_size + arg0 + 1 + arg1 + 1, argv[3]);
+
+    const char* commands[17] = 
     {
         "pacman -Syy",
         "pacman -Sy",
@@ -61,15 +76,24 @@ static int InstallArch()
         "pacstrap /mnt base linux linux-firmware",
         "genfstab -U /mnt >> /mnt/etc/fstab",
         "cp archinit/chroot_script /mnt/root/chroot_script",
-        "chmod +x /mnt/root/chroot_script",
-        "arch-chroot /mnt /root/chroot_script", // /mnt/root/chroot real path
-        "umount -l /mnt",
-        "reboot"
+        "chmod +x /mnt/root/chroot_script"
+
+        //"arch-chroot /mnt /root/chroot_script", // /mnt/root/chroot real path
+        //"rm /root/chroot_script",
+        //"umount -l /mnt",
+        //"reboot"
     };
+    commands[13] = chroot;
+    commands[14] = "rm /root/chroot_script";
+    commands[15] = "umount -l /mnt";
+    commands[16] = "reboot";
     uint32_t commandsLength = sizeof(commands) / sizeof(const char*);
 
     if(!CreateFDiskInstaller())
+    {
+        free(chroot);
         return EXIT_FAILURE;
+    }
 
     for(uint32_t i = 0; i < commandsLength; ++i)
     {
@@ -77,6 +101,7 @@ static int InstallArch()
     }
 
     DeleteFDiskInstaller();
+    free(chroot);
     return EXIT_SUCCESS;
 }
 

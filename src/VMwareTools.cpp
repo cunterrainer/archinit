@@ -13,10 +13,10 @@ std::string GetVMwareToolsName(const std::string& path)
     for(const auto& entry : std::filesystem::directory_iterator(path))
     {
         const std::string entry_str = std::move(entry.path().string());
-        const std::string start = entry_str.substr(0, 11);
-        const std::string end = entry_str.substr(entry_str.size() - 1 - 7, 7);
+        const std::string start = entry_str.substr(0, 16);
+        const std::string end = entry_str.substr(entry_str.size() - 7, 7);
 
-        if(start == "VMwareTools" && end == ".tar.gz")
+        if(start == "/mnt/VMwareTools" && end == ".tar.gz")
             return entry_str;
     }
     return "";
@@ -38,7 +38,7 @@ int main()
         if(yn != 'Y' && yn != 'y')
             return 0;
     }
-    RunProcess("pacman -S perl", "y");
+    RunProcess("pacman -S perl xf86-video-vmware", "y");
 
     RunProcess("for x in {0..6}; do mkdir -p /etc/init.d/rc${x}.d; done", nullptr);
     RunProcess("mount /dev/cdrom /mnt", nullptr);
@@ -49,9 +49,9 @@ int main()
         return 0;
     }
 
-    const std::string process = "tar xf /mnt/" + vmwaretools + " -C /root";
+    const std::string process = "tar xf " + vmwaretools + " -C /root";
     RunProcess(process.c_str(), nullptr);
-    RunProcess("perl /root/vmware-tools-distrib/vmware-install.pl", nullptr);
+    RunProcess("perl /root/vmware-tools-distrib/vmware-install.pl", nullptr); // "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
 
 
     std::ofstream output("/etc/systemd/system/vmwaretools.service");
@@ -79,5 +79,6 @@ int main()
 
     RunProcess("systemctl start vmwaretools.service", nullptr);
     RunProcess("systemctl enable vmwaretools.service", nullptr);
+    RunProcess("rm -r /root/vmware-tools-distrib", nullptr);
     RunProcess("reboot", nullptr);
 }

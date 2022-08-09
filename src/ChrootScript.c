@@ -136,7 +136,20 @@ bool WriteLineToFile(const char* filePath, const char* line)
 }
 
 
-bool WriteHostsFile()
+char* CreateStr(const char* str1, const char* str2)
+{
+    const size_t dest_len = strlen(str1);
+    const size_t src_len = strlen(str2);
+
+    char* strn = calloc(dest_len + src_len + 1, sizeof(char));
+    strcpy(strn, str1);
+    strcpy(strn + dest_len, str2);
+
+    return strn;
+}
+
+
+bool WriteHostsFile(const char* hostname)
 {
     #define HOST_PATH "/etc/hosts"
     FILE* fp = fopen(HOST_PATH, "a");
@@ -148,7 +161,7 @@ bool WriteHostsFile()
     fprintf(fp, "\n");
     fprintf(fp, "127.0.0.1\tlocalhost\n");
     fprintf(fp, "::1\t\tlocalhost\n");
-    fprintf(fp, "127.0.1.1\tvyx.localdomain vyx");
+    fprintf(fp, "127.0.1.1\t%s.localdomain %s", hostname, hostname);
     
     if(fclose(fp) != 0) {
         PrintFileCloseError(HOST_PATH);
@@ -205,8 +218,30 @@ bool EditSudoersFile()
 }
 
 
-int main()
+char* concatPw(const char* pw)
 {
+    const size_t pw_size = strlen(pw);
+    char* new_pw = calloc(pw_size * 2 + 2, sizeof(char));
+    strcpy(new_pw, pw);
+    strcpy(new_pw + strlen(pw), "\n");
+    strcpy(new_pw + strlen(pw) + 1, pw);
+
+    return new_pw;
+}
+
+
+
+int main(int argc, char** argv)
+{
+    char* root_pw = concatPw(argv[1]);
+    char* user_pw = concatPw(argv[3]);
+    const char* user_name = argv[2];
+    const size_t user_size = strlen(user_name);
+
+    char* useradd_cmd = CreateStr("useradd -m ", user_name);
+    char* pw_cmd = CreateStr("passwd ", user_name);
+    char* usermod_cmd = CreateStr("usermod -aG wheel,audio,video,optical,storage ", user_name);
+
     RunProcess("ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime", NULL);
     RunProcess("hwclock --systohc", NULL);
     RunProcess("pacman -S nano", "y");
@@ -214,12 +249,12 @@ int main()
     RunProcess("locale-gen", NULL);
     WriteLineToFile("/etc/locale.conf", "LANG=en_US.UTF-8");
     RunProcess("locale-gen", NULL);
-    RunProcess("passwd", "1234\n1234");
-    WriteLineToFile("/etc/hostname", "vyx");
-    WriteHostsFile();
-    RunProcess("useradd -m vyx", NULL);
-    RunProcess("passwd vyx", "1234\n1234");
-    RunProcess("usermod -aG wheel,audio,video,optical,storage vyx", NULL);
+    RunProcess("passwd", root_pw); // 1234\n1234
+    WriteLineToFile("/etc/hostname", user_name);
+    WriteHostsFile(user_name);
+    RunProcess(useradd_cmd, NULL);
+    RunProcess(pw_cmd, user_pw); // 1234\n1234
+    RunProcess(usermod_cmd, NULL);
     RunProcess("pacman -S sudo grub efibootmgr dosfstools os-prober mtools", "y");
     EditSudoersFile();
     RunProcess("mkdir /boot/EFI", NULL);
@@ -228,5 +263,11 @@ int main()
     RunProcess("grub-mkconfig -o /boot/grub/grub.cfg", NULL);
     RunProcess("pacman -S networkmanager git", "y");
     RunProcess("systemctl enable NetworkManager", NULL);
+    
+    free(root_pw);
+    free(user_pw);
+    free(useradd_cmd);
+    free(pw_cmd);
+    free(usermod_cmd);
     RunProcess("exit", NULL);
 }
