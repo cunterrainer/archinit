@@ -69,6 +69,24 @@ void CopyWallpaper(const char* const homePath)
 }
 
 
+void ChownFolder(const char* folder, const char* owner)
+{
+    const char* cmd_start = "sudo chown -R ";
+    size_t cmd_start_size = strlen(cmd_start);
+    size_t owner_size = strlen(owner);
+
+    char* process = calloc(cmd_start_size + strlen(folder) + owner_size + 2, sizeof(char));
+
+    strcpy(process, cmd_start);
+    strcpy(process + cmd_start_size, owner);
+    strcpy(process + cmd_start_size + owner_size, " ");
+    strcpy(process + cmd_start_size + owner_size + 1, folder);
+
+    RunProcess(process, NULL);
+    free(process);
+}
+
+
 int main()
 {
     const char* const files[] = 
@@ -135,4 +153,6 @@ int main()
 
     RunProcess(cpCmd, NULL);
     free(cpCmd);
+
+    ChownFolder(CONFIG_FOLDER, getenv("USER"));
 }

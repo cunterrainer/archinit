@@ -45,6 +45,22 @@ const std::vector<std::string> g_Packages = {
 };
 
 
+const std::vector<std::string> g_Parser = {
+    "c",
+    "cpp",
+    "python",
+    "cmake",
+    "make"
+};
+
+
+const std::vector<std::string> g_CocLangServ = {
+    "coc-clangd",
+    "coc-pyright",
+    "coc-cmake"
+};
+
+
 namespace util
 {
     std::string VectorToString(const std::vector<std::string>& vec)
@@ -125,6 +141,13 @@ namespace util
     }
 
 
+    void ChownFolder(const std::string& folder, const std::string& owner)
+    {
+        const std::string process = "sudo chown -R " + owner + " " + folder;
+        RunProcess(process.c_str(), nullptr);
+    }
+
+
     void Chmod(const std::string& file, const std::string& mode)
     {
         const std::string process = "sudo chmod " + mode + " " + file;
@@ -194,6 +217,9 @@ void InstallI3()
     programsCommand = "sudo pacman -S " + util::VectorToString(g_Packages);
     RunProcess(programsCommand.c_str(), "y");
     RunProcess("pulseaudio --check && pulseaudio -D", nullptr);
+    InstallYay();
+    RunProcess("yay -S google-chrome", nullptr);
+    RunProcess("yay -S visual-studio-code-bin", nullptr);
     RunProcess("yay -S i3lock-color", nullptr);
 
     const std::string home = util::GetEnv("HOME");
@@ -235,31 +261,24 @@ void InstallI3()
     // Neovim
     util::CreateFolder(home + "/.config/nvim/themes");
     util::CreateFolder(home + "/.config/nvim/lua");
-    util::CreateFolder(home + "/.config/nvim/autoload");
+    //util::CreateFolder(home + "/.config/nvim/autoload");
+    util::ChownFolder(home + "/.config/nvim", user);
 
     util::CopyFile(config_folder + "init.vim", home + "/.config/nvim/init.vim");
     util::CopyFolder(config_folder + "themes", home + "/.config/nvim/themes");
     util::CopyFolder(config_folder + "lua", home + "/.config/nvim/lua");
 
-    programsCommand = "sudo curl https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim -o " + home + "/.config/nvim/autoload/plug.vim";
-    RunProcess(programsCommand.c_str(), nullptr);
+    //programsCommand = "sudo curl https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim -o " + home + "/.config/nvim/autoload/plug.vim";
+    //RunProcess(programsCommand.c_str(), nullptr);
 
+    std::string nvim_cmd = "nvim +PlugInstall +CocUpdateSync +CocUpdate \"+CocInstall ";
+    for(auto& i : g_CocLangServ)
+        nvim_cmd += i + " ";
 
-        //execCmd("Downloading plug.vim", "sudo curl https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim -o " + m_HomeDir + "/.config/nvim/autoload/plug.vim");
-
-        //execCmd("Installing Neovim plugins", "nvim +PlugInstall");
-
-        //execCmd("Updating and syncing coc", "nvim +CocUpdateSync");
-        //execCmd("Updating coc", "nvim +CocUpdate");
-        //for(std::size_t i = 0; i < coc_pack.size(); ++i)
-        //    execCmd("Coc install " + coc_pack[i], "nvim \"+CocInstall " + coc_pack[i] + "\"");
-
-        ////execCmd("Coc install clangd and pyright", "nvim \"+CocInstall coc-clangd coc-pyrigth\"");
-        ////execCmd("Updating TS", "nvim \"+TSUpdate all\"");
-        //
-        //execCmd("Updating treesitter-parsers", "nvim +TSUpdate");
-        //for(std::size_t i = 0; i < parser_ts.size(); ++i)
-        //    execCmd("Installing " + parser_ts[i] + " parser for treesitter", "nvim \"+TSInstall " + parser_ts[i] + "\"");
+    nvim_cmd += "\" +TSUpdate \"+TSInstall ";
+    for(auto& i : g_Parser)
+        nvim_cmd += i + " ";
+    nvim_cmd += "\"";
 }
 
 
@@ -267,7 +286,10 @@ int main()
 {
     if(geteuid() == 0) {
         PrintColor(YEL, "Warning: You're trying to run this program as root, hence the files will be copied into the root home dir\nAre you sure you want to proceede? [y|n]:");
-        return EXIT_FAILURE;
+        char yn;
+        std::cin >> yn;
+        if (yn != 'y' && yn != 'Y')
+            return 0;
     }
 
     InstallI3();
