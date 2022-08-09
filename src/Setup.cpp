@@ -141,7 +141,7 @@ namespace util
 
     void ChownFolder(const std::string& folder, const std::string& owner)
     {
-        const std::string process = "sudo chown -R " + owner + " " + folder;
+        const std::string process = "sudo chown -R " + owner + ":" + owner + " " + folder;
         RunProcess(process.c_str(), nullptr);
     }
 
@@ -214,10 +214,10 @@ void InstallI3()
 
     RunProcess("pulseaudio --check && pulseaudio -D", nullptr);
     InstallYay();
-    RunProcess("yay -S google-chrome", "\ny");
-    RunProcess("yay -S visual-studio-code-bin", "\ny");
+    RunProcess("yay -S google-chrome", "n\ny");
+    RunProcess("yay -S visual-studio-code-bin", "n\ny");
     RunProcess("sudo pacman -R i3lock", "y");
-    RunProcess("yay -S i3lock-color", "\ny");
+    RunProcess("yay -S i3lock-color", "n\ny");
 
     RunProcess("yay -Scc", "y\ny\ny");
     RunProcess("sudo pacman -Scc", "y\ny");
@@ -271,7 +271,11 @@ void InstallI3()
     programsCommand = "sudo curl https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim -o " + home + "/.config/nvim/autoload/plug.vim";
     RunProcess(programsCommand.c_str(), nullptr);
 
-    std::string nvim_cmd = "nvim +PlugInstall +CocUpdateSync +CocUpdate \"+CocInstall ";
+    //nvim -es -u init.vim -i NONE -c "PlugInstall" -c "qa"
+    std::string nvim_cmd = "nvim -es -u " + home + "/.config/nvim/init.vim -i NONE -c \"PlugInstall\" -c \"qa\"";
+    RunProcess(nvim_cmd.c_str(), nullptr);
+
+    nvim_cmd = "nvim +CocUpdateSync +CocUpdate \"+CocInstall ";
     for(auto& i : g_CocLangServ)
         nvim_cmd += i + " ";
 
