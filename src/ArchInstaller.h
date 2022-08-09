@@ -85,8 +85,9 @@ static int InstallArch(char** argv)
     };
     commands[13] = chroot;
     commands[14] = "rm /root/chroot_script";
-    commands[15] = "umount -l /mnt";
-    commands[16] = "reboot";
+    commands[15] = "rm /mnt/root/chroot_script";
+    commands[16] = "umount -l /mnt";
+    //commands[16] = "reboot";
     uint32_t commandsLength = sizeof(commands) / sizeof(const char*);
 
     if(!CreateFDiskInstaller())
