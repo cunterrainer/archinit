@@ -73,7 +73,7 @@ namespace util
 
 void CopyXinitFile()
 {
-    const std::string home_dir = ("HOME");
+    const std::string home_dir = util::GetEnv("HOME");
     const std::string user = util::GetEnv("USER");
     const std::string copy_command = "sudo cp /etc/X11/xinit/xinitrc " + home_dir + "/.xinitrc";
     const std::string chown_command = "sudo chown " + user + ":" + user + " " + home_dir + "/.xinitrc";
@@ -111,8 +111,9 @@ void ConfigureXinitFile()
 void InstallI3()
 {
     const std::string programsCommand = "sudo pacman -S " + util::VectorToString(g_Programs);
-    RunProcess(programsCommand.c_str(), "y");
+    RunProcess(programsCommand.c_str(), "all\ny");
     CopyXinitFile();
+    ConfigureXinitFile();
 }
 
 
@@ -123,4 +124,5 @@ int main()
         return EXIT_FAILURE;
     }
 
+    InstallI3();
 }
