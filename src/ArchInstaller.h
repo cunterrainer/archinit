@@ -65,7 +65,7 @@ static int InstallArch(char** argv)
     const char* commands[17] = 
     {
         "pacman -Syy",
-        "pacman -Sy archlinux-keyring",
+        "pacman -Sy",
         "timedatectl set-ntp true",
         "./" FDISK_PATH,
         "mkfs.fat -F32 /dev/sda1",
@@ -89,6 +89,8 @@ static int InstallArch(char** argv)
     commands[16] = "umount -l /mnt";
     //commands[16] = "reboot";
     uint32_t commandsLength = sizeof(commands) / sizeof(const char*);
+
+    RunProcess("pacman -S archlinux-keyring", "y");
 
     if(!CreateFDiskInstaller())
     {
