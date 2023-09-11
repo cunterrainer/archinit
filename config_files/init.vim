@@ -17,8 +17,10 @@ Plug 'tpope/vim-repeat'
 Plug 'glts/vim-magnum'
 Plug 'glts/vim-radical'
 Plug 'terryma/vim-smooth-scroll'
-Plug 'frazrepo/vim-rainbow'
+" Plug 'frazrepo/vim-rainbow' " causes lag
 Plug 'ryanoasis/vim-devicons'
+Plug 'preservim/tagbar'
+Plug 'ludovicchabant/vim-gutentags'
 "" Themes
 Plug 'morhetz/gruvbox'
 Plug 'NLKNguyen/papercolor-theme'
@@ -60,6 +62,15 @@ imap <silent><script><expr> <Alt> <Plug>(copilot-next)
 imap <silent><script><expr> <Ctrl> <Plug>(copilot-previous)
 set pastetoggle=<F2>
 let g:rainbow_active = 1
+let g:gutentags_generate_on_new = 1
+let g:gutentags_generate_on_missing = 1
+let g:gutentags_generate_on_write = 1
+let g:gutentags_generate_on_empty_buffer = 0
+let g:gutentags_add_default_project_roots = 0
+let g:gutentags_project_root = ['package.json', '.git']
+let g:gutentags_cache_dir = expand('~/.cache/vim/ctags/')
+let g:gutentags_ctags_extra_args = ['--tag-relative=yes', '--fields=+ailmnS']
+nmap <F8> :TagbarToggle<CR>
 
 
 filetype plugin indent on
